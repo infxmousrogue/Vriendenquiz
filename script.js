@@ -5,7 +5,7 @@ const quizContainer = document.getElementById('quiz');
 const checkBtn = document.getElementById('check-btn');
 const nextBtn = document.getElementById('next-btn');
 const resultContainer = document.getElementById('result');
-let selectedOption = null;
+let selectedOptions = [];
 
 function loadQuestion() {
   const currentQuestion = quizData[currentQuestionIndex];
@@ -15,7 +15,7 @@ function loadQuestion() {
       ${currentQuestion.options.map((option, index) => `
         <li class="checkbox-wrapper-57">
           <label class="container">
-            <input type="checkbox" name="option" onclick="selectOption('${option}', this)">
+            <input type="checkbox" name="option" value="${option}" onclick="selectOption(this)">
             <div class="checkmark"></div>
             ${option}
           </label>
@@ -26,40 +26,38 @@ function loadQuestion() {
   checkBtn.style.display = 'inline-block';
   checkBtn.disabled = true;
   nextBtn.style.display = 'none';
-  selectedOption = null;
+  selectedOptions = [];
 }
 
-function selectOption(option, checkbox) {
-  selectedOption = option;
-  const checkboxes = document.querySelectorAll('.options input[type="checkbox"]');
-  checkboxes.forEach(cb => {
-    if (cb !== checkbox) {
-      cb.checked = false;
-    }
-  });
-  checkBtn.disabled = false;
+function selectOption(checkbox) {
+  if (checkbox.checked) {
+    selectedOptions.push(checkbox.value);
+  } else {
+    selectedOptions = selectedOptions.filter(option => option !== checkbox.value);
+  }
+  checkBtn.disabled = selectedOptions.length === 0;
 }
 
 function checkAnswer() {
   const currentQuestion = quizData[currentQuestionIndex];
   const checkboxes = document.querySelectorAll('.options input[type="checkbox"]');
+  const isNonScoring = currentQuestion.nonScoring || false;
 
   checkboxes.forEach((checkbox) => {
     const parent = checkbox.parentElement;
-    const optionText = parent.innerText.trim();
+    const optionText = checkbox.value;
 
     if (checkbox.checked) {
-      if (optionText === currentQuestion.answer) {
+      if (currentQuestion.answers.includes(optionText)) {
         parent.style.color = 'green'; // Correct answer
-        score++; // Increment the score
+        if (!isNonScoring) score++; // Increment score if it's not a non-scoring question
         createSuccessExplosion(parent);
-
       } else {
         parent.style.color = 'red'; // Incorrect answer
-        createPoopExplosion(parent); // Trigger poop emoji effect
+        createPoopExplosion(parent);
       }
     } else {
-      if (optionText === currentQuestion.answer) {
+      if (currentQuestion.answers.includes(optionText)) {
         parent.style.color = 'green'; // Highlight correct answer
       }
     }
@@ -76,56 +74,52 @@ function createPoopExplosion(element) {
     const emoji = document.createElement('div');
     emoji.className = 'poop-emoji';
     emoji.innerText = '💩'; // Poop emoji
- // Randomize size, rotation, and position
- const size = Math.random() * 2 + 1; // Random size between 1 and 3
- const rotation = Math.random() * 360; // Random rotation angle
- const left = Math.random() * 100; // Random left position in percentage
- const top = Math.random() * 100; // Random top position in percentage
 
- emoji.style.fontSize = `${size}em`;
- emoji.style.transform = `rotate(${rotation}deg)`;
- emoji.style.left = `${left}%`;
- emoji.style.top = `${top}%`;
+    const size = Math.random() * 2 + 1;
+    const rotation = Math.random() * 360;
+    const left = Math.random() * 100;
+    const top = Math.random() * 100;
 
- element.appendChild(emoji);
+    emoji.style.fontSize = `${size}em`;
+    emoji.style.transform = `rotate(${rotation}deg)`;
+    emoji.style.left = `${left}%`;
+    emoji.style.top = `${top}%`;
 
- // Remove the emoji after animation ends
- emoji.addEventListener('animationend', () => {
-   emoji.remove();
- });
+    element.appendChild(emoji);
+
+    emoji.addEventListener('animationend', () => {
+      emoji.remove();
+    });
   }
 }
 
 function createSuccessExplosion(element) {
-  // Create poop emoji elements
   for (let i = 0; i < 20; i++) {
     const emoji = document.createElement('div');
     emoji.className = 'poop-emoji';
-    emoji.innerText = '🎉'; // Poop emoji
- // Randomize size, rotation, and position
- const size = Math.random() * 2 + 1; // Random size between 1 and 3
- const rotation = Math.random() * 360; // Random rotation angle
- const left = Math.random() * 100; // Random left position in percentage
- const top = Math.random() * 100; // Random top position in percentage
+    emoji.innerText = '🎉';
 
- emoji.style.fontSize = `${size}em`;
- emoji.style.transform = `rotate(${rotation}deg)`;
- emoji.style.left = `${left}%`;
- emoji.style.top = `${top}%`;
+    const size = Math.random() * 2 + 1;
+    const rotation = Math.random() * 360;
+    const left = Math.random() * 100;
+    const top = Math.random() * 100;
 
- element.appendChild(emoji);
+    emoji.style.fontSize = `${size}em`;
+    emoji.style.transform = `rotate(${rotation}deg)`;
+    emoji.style.left = `${left}%`;
+    emoji.style.top = `${top}%`;
 
- // Remove the emoji after animation ends
- emoji.addEventListener('animationend', () => {
-   emoji.remove();
- });
+    element.appendChild(emoji);
+
+    emoji.addEventListener('animationend', () => {
+      emoji.remove();
+    });
   }
 }
 
-
 function nextQuestion() {
   currentQuestionIndex++;
-  if (currentQuestionIndex % 10 === 0 && currentQuestionIndex < quizData.length) {
+  if (currentQuestionIndex % 11 === 0 && currentQuestionIndex < quizData.length) {
     showIntermediateScore();
   } else if (currentQuestionIndex < quizData.length) {
     loadQuestion();
@@ -151,273 +145,335 @@ function showResult() {
   resultContainer.innerHTML = `You scored ${score} out of ${quizData.length}`;
 }
 
-
-
 const quizData = [
   {
-    question: "Hoeveel punten zitten er op een dobbelsteen?",
-    options: ["21", "23", "19", "6"],
-    answer: "6"
+    question: "1. Welke superkracht zou Jelle willen hebben?",
+    options: ["A", "B", "C", "D"], // A: Vliegen, B: Nooit dik worden, C: Spin krachten, D: Supersterk
+    answers: ["A"] // Correct answer is "Vliegen"
   },
   {
-    question: "Welke superkracht zou Jelle willen hebben?",
-    options: ["Vliegen", "Nooit dik worden", "Spin krachten", "Supersterk"],
-    answer: "Vliegen"
+    question: "2. Wat is de favoriete vakantieherinnering van Joris?",
+    options: ["A", "B", "C", "D"], // A: Zwemmen, B: Niks Doen, C: Biertje in de schaduw aan het water, D: Zonnen ;)
+    answers: ["C"] // Correct answer is "Biertje in de schaduw aan het water"
   },
   {
-    question: "Wat is de favoriete vakantieherinnering van Joris?",
-    options: ["Zwemmen", "Niks Doen", "Biertje in de schaduw aan het water", "Zonnen ;)"],
-    answer: "Biertje in de schaduw aan het water"
+    question: "3. Wie heeft als tweede de meeste bedpartners gehad?",
+    options: ["A", "B", "C", "D"], // A: Luuk, B: Wesley, C: Jelle, D: Dries
+    answers: ["D"] // Correct answer is "Dries"
   },
   {
-    question: "Wie heeft als tweede de meeste bedpartners gehad?",
-    options: ["Luuk", "Wesley", "Jelle", "Dries"],
-    answer: "Dries"
+    question: "4. Wie gedraagt zich het slechtst when drunk?",
+    options: ["A", "B", "C", "D"], // A: Joris, B: Jelle, C: Luuk, D: Dries
+    answers: ["B"] // Correct answer is "Jelle"
   },
   {
-    question: "Wie gedraagt zich het slechtst when drunk?",
-    options: ["Joris", "Jelle", "Luuk", "Dries"],
-    answer: "Jelle"
+    question: "5. Wie kan het meest irritant zijn?",
+    options: ["A", "B", "C", "D"], // A: Wesley, B: Dries, C: Jelle, D: Luuk
+    answers: ["C"] // Correct answer is "Jelle"
   },
   {
-    question: "Wie kan het meest irritant zijn?",
-    options: ["Wesley", "Dries", "Jelle", "Luuk"],
-    answer: "Jelle"
+    question: "6. Bij welk eten sterft Wesley liever dan dat hij het opeet?",
+    options: ["A", "B", "C", "D"], // A: Rare Steak, B: Zalm, C: Mosselen, D: Carpaccio
+    answers: ["B"] // Correct answer is "Zalm"
   },
   {
-    question: "Bij welk eten sterft Wesley liever dan dat hij het opeet?",
-    options: ["Rare Steak", "Zalm", "Mosselen", "Carpaccio"],
-    answer: "Zalm"
+    question: "7. Wie is het meest avontuurlijk van de groep?",
+    options: ["A", "B", "C", "D"], // A: Wesley, B: Jelle, C: Luuk, D: Dries
+    answers: ["D"] // Correct answer is "Dries"
   },
   {
-    question: "Wie is het meest avontuurlijk van de groep?",
-    options: ["Wesley", "Jelle", "Luuk", "Dries"],
-    answer: "Dries"
+    question: "8. Welke (sociale) zaak geeft Joris het meest om?",
+    options: ["A", "B", "C", "D"], // A: Rocket League, B: Familie, C: Darten, D: Bier Drinken
+    answers: ["B"] // Correct answer is "Familie"
   },
   {
-    question: "Welke (sociale) zaak geeft Joris het meest om?",
-    options: ["Rocket League", "Familie", "Darten", "Bier Drinken"],
-    answer: "Familie"
+    question: "9. Hoe geeft Driezel liefde?",
+    options: ["A", "B", "C", "D"], // A: Quality Time, B: Verbaal, C: Met z’n harde piemel, D: Niet
+    answers: ["A"] // Correct answer is "Quality Time"
   },
   {
-    question: "Hoe geeft Driezel liefde?",
-    options: ["Quality Time", "Verbaal", "Met z’n harde piemel", "Niet"],
-    answer: "Quality Time"
+    question: "10. Wie heeft het meest last van een ochtendhumeur?",
+    options: ["A", "B", "C", "D"], // A: Wesley, B: Luuk, C: Joris, D: Jelle
+    answers: ["D"] // Correct answer is "Jelle"
   },
   {
-    question: "Wie heeft het meest last van een ochtendhumeur?",
-    options: ["Wesley", "Luuk", "Joris", "Jelle"],
-    answer: "Jelle"
+    question: "Welk liedje hoor je hier?",
+    options: ["A", "B", "C", "D"], // A: Wesley, B: Luuk, C: Joris, D: Jelle
+    answers: ["C"] // Correct answer is "Jelle"
   },
   {
-    question: "Welke sport wilt Jelle het liefst beoefenen?",
-    options: ["Mountainbiken", "Geen", "Snowboarden", "F1 Coureur"],
-    answer: "F1 Coureur"
+    question: "11. Welke sport wil Jelle het liefst beoefenen?",
+    options: ["A", "B", "C", "D"], // A: Mountainbiken, B: Geen, C: Snowboarden, D: F1 Coureur
+    answers: ["A"] 
   },
   {
-    question: "Met welke vriend zit Joris het liefst in het team met Beerpong?",
-    options: ["Luuk", "Jelle", "Dries", "Wesley"],
-    answer: "Wesley"
+    question: "12. Met welke vriend zit Joris het liefst in het team met Beerpong?",
+    options: ["A", "B", "C", "D"], // A: Luuk, B: Jelle, C: Dries, D: Wesley
+    answers: ["D"] // Correct answer is "Wesley"
   },
   {
-    question: "Wie is het snelst zenuwachtig?",
-    options: ["Luuk", "Jelle", "Dries", "Joris"],
-    answer: "Joris"
+    question: "13. Wie is het snelst zenuwachtig?",
+    options: ["A", "B", "C", "D"], // A: Luuk, B: Jelle, C: Dries, D: Joris
+    answers: ["A"] 
   },
   {
-    question: "Wat is het grappigst wat Jelle ooit heeft meegemaakt?",
-    options: [
-      "Dat de hele familie Jelle kwijt was terwijl hij op de strechter van een ander ipv zijn eigen bed lag",
-      "Dat hij wakker is geworden in een maisveld terwijl hij een stop bord omhelzde",
-      "Op een feestje dacht Jelle dat hij tegen een bekende stond te praten maar het bleek een wildvreemde te zijn die toevallig dezelfde jas droeg. Ze hebben er uiteindelijk samen hard om gelachen.",
-      "Tijdens een wandeltocht in het bos liep Jelle voorop met een kaart vastberaden om de weg te wijzen. Na een uur bleek dat hij de kaart ondersteboven hield en ze eigenlijk al de hele tijd in een cirkel liepen."
-    ],
-    answer: "Tijdens een wandeltocht in het bos liep Jelle voorop met een kaart vastberaden om de weg te wijzen. Na een uur bleek dat hij de kaart ondersteboven hield en ze eigenlijk al de hele tijd in een cirkel liepen."
+    question: "14. Wat is het grappigst wat Jelle ooit heeft meegemaakt?",
+    options: ["A", "B", "C", "D"], // A: Familie kwijt in stretcher, B: Wakker in maisveld, C: Praatte tegen wildvreemde, D: Verkeerde kaart in bos
+    answers: ["A"] 
   },
   {
-    question: "Wat is de droomreisbestemming van Wesley?",
-    options: ["Zuid-Afrika", "Japan", "Ibiza", "Noord-Amerika"],
-    answer: "Noord-Amerika"
+    question: "15. Wat is de droomreisbestemming van Wesley?",
+    options: ["A", "B", "C", "D"], // A: Zuid-Afrika, B: Japan, C: Ibiza, D: Noord-Amerika
+    answers: ["D"] // Correct answer is "Noord-Amerika"
   },
   {
-    question: "Wie volgt Dries blind naar een concert of festival?",
-    options: ["Luuk", "Jelle", "Wesley", "Joris"],
-    answer: "Joris"
+    question: "16. Wie volgt Dries blind naar een concert of festival?",
+    options: ["A", "B", "C", "D"], // A: Luuk, B: Jelle, C: Wesley, D: Joris
+    answers: ["C"] 
   },
   {
-    question: "Welke vriend maakt het makkelijkst contact buiten de groep?",
-    options: ["Dries", "Jelle", "Luuk", "Wesley"],
-    answer: "Wesley"
+    question: "17. Welke vriend maakt het makkelijkst contact buiten de groep?",
+    options: ["A", "B", "C", "D"], // A: Dries, B: Jelle, C: Luuk, D: Wesley
+    answers: ["D"] // Correct answer is "Wesley"
   },
   {
-    question: "Wil Dries kinderen?",
-    options: ["Niet per se", "Minimaal 3", "Maximaal 2", "Ik kon geen 3de bedenken sorry"],
-    answer: "Niet per se"
+    question: "18. Wil Dries kinderen?",
+    options: ["A", "B", "C", "D"], // A: Niet per se, B: Minimaal 3, C: Maximaal 2, D: Ik kon geen 3de bedenken
+    answers: ["A"] // Correct answer is "Niet per se"
   },
   {
-    question: "Welke vriend kleedt zich het slechtst?",
-    options: ["Joris", "Luuk", "Jelle", "Dries"],
-    answer: "Luuk"
+    question: "19. Welke vriend kleedt zich het slechtst?",
+    options: ["A", "B", "C", "D"], // A: Joris, B: Luuk, C: Jelle, D: Dries
+    answers: ["B"] // Correct answer is "Luuk"
   },
   {
-    question: "Welk dier zou Jelle willen zijn?",
-    options: ["Beer", "Luiaard", "Havik", "Hond"],
-    answer: "Beer"
+    question: "20. Wat is de favoriete band van Luuk?",
+    options: ["A", "B", "C", "D"], // A: Sheriff Woody, B: Alfredo Linguini, C: Axel the Carnie, D: Remy de Rat
+    answers: ["B"] // Correct answer is "Remy de Rat"
   },
   {
-    question: "Welk fictief personage lijkt het meest op Dries?",
-    options: ["Sheriff Woody", "Alfredo Linguini", "Axel the Carnie", "Remy de Rat"],
-    answer: "Remy de Rat"
+    question: "Wie zijn baby foto zie je hier?",
+    options: ["A", "B", "C", "D"], // A: Dries, B: Wesley, C: Joris, D: Jelle
+    answers: ["C"] // Correct answer is "Jelle"
   },
   {
-    question: "Wie is de grootste grapjas?",
-    options: ["Dries", "Wesley", "Joris", "Jelle"],
-    answer: "Jelle"
+    question: "21. Welk dier zou Jelle willen zijn?",
+    options: ["A", "B", "C", "D"], // A: Dries, B: Wesley, C: Joris, D: Jelle
+    answers: ["A"] // Correct answer is "Jelle"
   },
   {
-    question: "Wie kan niet zonder zijn telefoon?",
-    options: ["Joris", "Wesley", "Jelle", "Luuk"],
-    answer: "Jelle"
+    question: "22. Welk fictief personage lijkt het meest op Dries?",
+    options: ["A", "B", "C", "D"], // A: Joris, B: Wesley, C: Jelle, D: Luuk
+    answers: ["D"] // Correct answer is "Jelle"
   },
   {
-    question: "Wie is de beste wingman van de groep?",
-    options: ["Joris", "Wesley", "Jelle", "Dries"],
-    answer: "Wesley"
+    question: "23. Wie is de grootste grapjas?",
+    options: ["A", "B", "C", "D"], // A: Joris, B: Wesley, C: Jelle, D: Dries
+    answers: ["D"] // Correct answer is "Wesley"
   },
   {
-    question: "Welke vriend heeft de beste dansmoves?",
-    options: ["Joris", "Wesley", "Luuk", "Dries"],
-    answer: "Jelle"
+    question: "24. Wie kan niet zonder zijn telefoon?",
+    options: ["A", "B", "C", "D"], // A: Joris, B: Wesley, C: Luuk, D: Dries
+    answers: ["A"] // Correct answer is "Dries"
   },
   {
-    question: "Wie kan het slechtst tegen drank?",
-    options: ["Joris", "Wesley", "Jelle", "Dries"],
-    answer: "Wesley"
+    question: "25. Wie is de beste wingman van de groep?",
+    options: ["A", "B", "C", "D"], // A: Joris, B: Wesley, C: Jelle, D: Dries
+    answers: ["B"] // Correct answer is "Jelle"
   },
   {
-    question: "Hoe belangrijk is geld voor Jelle?",
-    options: ["Geld is alles", "Niet het allerbelangrijkste", "Soms belangrijk", "Geld is niet belangrijk"],
-    answer: "Soms belangrijk"
+    question: "26. Welke vriend heeft de beste dansmoves?",
+    options: ["A", "B", "C", "D"], // A: Geld is alles, B: Niet het allerbelangrijkste, C: Soms belangrijk, D: Geld is niet belangrijk
+    answers: ["D"] // Correct answer is "Soms belangrijk"
   },
   {
-    question: "Wie houdt zijn hand op de knipbeurs?",
-    options: ["Joris", "Wesley", "Jelle", "Luuk"],
-    answer: "Jelle"
+    question: "27. Wie kan het slechts tegen drank?",
+    options: ["A", "B", "C", "D"], // A: Joris, B: Wesley, C: Jelle, D: Luuk
+    answers: ["C"] // Correct answer is "Jelle"
   },
   {
-    question: "Wie heeft de meeste moeite met op tijd komen?",
-    options: ["Dries", "Joris", "Jelle", "Luuk"],
-    answer: "Joris"
+    question: "28. Hoe belangrijk is geld voor Jelle?",
+    options: ["A", "B", "C", "D"], // A: Dries, B: Joris, C: Jelle, D: Luuk
+    answers: ["B"] // Correct answer is "Jelle"
   },
   {
-    question: "Wie kan nooit toegeven dat hij fout zit?",
-    options: ["Wesley", "Joris", "Jelle", "Luuk"],
-    answer: "Jelle"
+    question: "29. Wie houd zijn hand op de knipbeurs?",
+    options: ["A", "B", "C", "D"], // A: Wesley, B: Joris, C: Jelle, D: Luuk
+    answers: ["A"] // Correct answer is "Joris"
   },
   {
-    question: "Wie durft er het minst volgens Wesley?",
-    options: ["Dries", "Joris", "Jelle", "Luuk"],
-    answer: "Jelle"
+    question: "30. Wie heeft de meeste moeite met op tijd komen?",
+    options: ["A", "B", "C", "D"], // A: Dries, B: Joris, C: Jelle, D: Luuk
+    answers: ["D"] // Correct answer is "Jelle"
   },
   {
-    question: "Welk talent zou Joris het liefst willen hebben?",
-    options: ["Rocket League Pro Speler Zijn", "Twee rechterhanden", "Darts Talentje", "Acteur"],
-    answer: "Rocket League Pro Speler Zijn"
+    question: "Hoeveel elementen zitten er in het periodiek systeem op dit moment?",
+    options: ["A", "B", "C", "D"], // A: Dries, B: Joris, C: Jelle, D: Luuk
+    answers: ["C"] // Correct answer is "Jelle"
   },
   {
-    question: "Wat is de favoriete feestdag van Dries?",
-    options: ["Dag van de kontjes", "Kerst", "Gast weet niet eens wanneer de feestdagen zijn", "Koningsdag"],
-    answer: "Kerst"
+    question: "31. Wie kan nooit toegeven dat hij fout zit?",
+    options: ["A", "B", "C", "D"], // A: Rocket League Pro Speler Zijn, B: Twee rechterhanden, C: Darts Talentje, D: Acteur
+    answers: ["B"] // Correct answer is "Twee rechterhanden"
   },
   {
-    question: "Welke hobby zou Dries willen oppakken als hij meer tijd had?",
-    options: ["Echt leren koken", "Meer Gamen", "Is slapen een hobby?", "Warhammer Schilderen"],
-    answer: "Echt leren koken"
+    question: "32. Wie durft er het minst volgens Wesley?",
+    options: ["A", "B", "C", "D"], // A: Dag van de kontjes, B: Kerst, C: Gast weet niet eens wanneer de feestdagen zijn, D: Koningsdag
+    answers: ["C"] // Correct answer is "Kerst"
   },
   {
-    question: "Wie gaat het in 2024 helemaal over een andere boeg gooien?",
-    options: ["Dries", "Joris", "Jelle", "Luuk"],
-    answer: "Dries"
+    question: "33. Welk talent zou Joris het liefst willen hebben?",
+    options: ["A", "B", "C", "D"], // A: Echt leren koken, B: Meer Gamen, C: Is slapen een hobby?, D: Warhammer Schilderen
+    answers: ["B"] // Correct answer is "Echt leren koken"
   },
   {
-    question: "Wie gaat het in 2024 helemaal over een andere boeg gooien?",
-    options: ["Dries", "Joris", "Jelle", "Luuk"],
-    answer: "Dries"
+    question: "34. Wat is de favoriete feestdag van Dries?",
+    options: ["A", "B", "C", "D"], // A: Dries, B: Joris, C: Jelle, D: Luuk
+    answers: ["C"] // Correct answer is "Dries"
   },
   {
-    question: "Welke vriend heeft de leukste plannen voor 2025?",
-    options: ["Dries", "Joris", "Luuk", "Wesley"],
-    answer: "Dries"
+    question: "35. Welke hobby zou Dries willen oppakken als hij meer tijd had?",
+    options: ["A", "B", "C", "D"], // A: Dries, B: Joris, C: Luuk, D: Wesley
+    answers: ["D"] // Correct answer is "Dries"
   },
   {
-    question: "Wie is het grootste feestbeest?",
-    options: ["Dries", "Joris", "Jelle", "Wesley"],
-    answer: "Dries"
+    question: "36. Wie gaat het in 2025 helemaal over een andere boeg gooien?",
+    options: ["A", "B", "C", "D"], // A: Dries, B: Joris, C: Jelle, D: Wesley
+    answers: ["C","D"] // Correct answer is "Dries"
   },
   {
-    question: "Wat is de favoriete manier om een vrije avond door te brengen van Joris?",
-    options: ["Uitgaan", "Gamen", "Film kijken", "Klussen"],
-    answer: "Gamen"
+    question: "37. Welke vriend heeft de leukste plannen voor 2025?",
+    options: ["A", "B", "C", "D"], // A: Uit de kast komen, B: Hoogtevrees, C: Vrouwen, D: Bindingsangst
+    answers: ["A"] // Correct answer is "Bindingsangst"
   },
   {
-    question: "Wat is de favoriete manier om een vrije avond door te brengen van Joris?",
-    options: ["Uitgaan", "Gamen", "Film kijken", "Klussen"],
-    answer: "Gamen"
+    question: "38. Wie is het grootste feestbeest?",
+    options: ["A", "B", "C", "D"], // A: Dries, B: Jelle, C: Luuk, D: Wesley
+    answers: ["D"] // Correct answer is "Wesley"
   },
   {
-    question: "Welke nieuwe vaardigheid zou Wesley willen leren?",
-    options: ["Dansen", "Vliegen", "Golfen", "Geduld Hebben"],
-    answer: "Dansen"
+    question: "39. Welke verborgen angst heeft Luuk?",
+    options: ["A", "B", "C", "D"], // A: Lijmpot met sigaretten, B: Bier, C: Laptop, D: Voedsel
+    answers: ["D"] // Correct answer is "Lijmpot met sigaretten"
   },
   {
-    question: "Wie houdt er het meest van roddelen?",
-    options: ["Wesley", "Joris", "Luuk", "Dries"],
-    answer: "Jelle"
+    question: "40. Welke vriend heeft het meest kleurrijk liefdesleven?",
+    options: ["A", "B", "C", "D"], // A: Wesley, B: Joris, C: Luuk, D: Dries
+    answers: ["D"] // Correct answer is "Wesley"
   },
   {
-    question: "Wat is het raarste wat Jelle bij zijn bed bewaart?",
-    options: ["Lijmpot met sigaretten", "Bier", "Laptop", "Sigaretten"],
-    answer: "Lijmpot met sigaretten"
+    question: "Hoe noem je dit menu logo?",
+    options: ["A", "B", "C", "D"], // A: Wesley, B: Joris, C: Luuk, D: Dries
+    answers: ["A"] // Correct answer is "Wesley"
   },
   {
-    question: "Wat is een ding wat Dries in zijn leven zou veranderen voor iemand anders?",
-    options: ["Zijn kamer opruimen als hij ooit een meid krijgt", "Minder Gamen", "Minder Stappen", "Niks"],
-    answer: "Minder Gamen"
+    question: "41. Wat is de favoriete manier om een vrije avond door te brengen van Joris?",
+    options: ["A", "B", "C", "D"], // A: Brit Bootycall, B: Muziek, C: Feesten, D: Slapen
+    answers: ["B"] // Correct answer is "Muziek"
   },
   {
-    question: "Welke zin/woord(en) gebruikt Joris het meeste?",
-    options: ["Dit is scripting jonge!", "Kschei ermee uit man!", "Als je nu niet ophoud met die ELO scope!", "Joris laat voornamelijk scheten"],
-    answer: "Dit is scripting jonge!"
+    question: "42. Welk land heeft Joris bovenaan zijn bucketlist staan?",
+    options: ["A", "B", "C", "D"], // A: Brit Bootycall, B: Muziek, C: Feesten, D: Slapen
+    answers: ["A"] // Correct answer is "Muziek"
   },
   {
-    question: "Waarover valt niet te onderhandelen in een relatie volgens Wesley?",
-    options: ["Minimaal 1x friet met frikandel per week", "Vrijdag frietdag", "Geslachtsgemeenschap", "Kinderen zijn een must"],
-    answer: "Geslachtsgemeenschap"
+    question: "43. Welke nieuwe vaardigheid zou Wesley willen leren?",
+    options: ["A", "B", "C", "D"], // A: Zijn kamer opruimen als die ooit een meid krijgt, B: Minder Gamen, C: Minder Stappen, D: Niks
+    answers: ["D"] // Correct answer is "Zijn kamer opruimen als die ooit een meid krijgt"
   },
   {
-    question: "Bij wie schuift Wesley het liefst aan voor een etentje?",
-    options: ["Joris", "Jelle", "Luuk", "Dries"],
-    answer: "Dries"
+    question: "44. Wat is het raarste wat Jelle nu bij zijn bed bewaard?",
+    options: ["A", "B", "C", "D"], // A: Dit is scripting jonge!, B: Kschei ermee uit man!, C: Als je nu niet ophoud met die ELO scope!, D: Joris laat voornamelijk scheten
+    answers: ["C"] // Correct answer is "Dit is scripting jonge!"
   },
   {
-    question: "Wat vinden mensen het leukst aan Joris?",
-    options: ["Assertiviteit", "Koppigheid", "Alleen winnen mentaliteit", "Gezelligheid"],
-    answer: "Gezelligheid"
+    question: "45. Wie houd er het meest van roddelen?",
+    options: ["A", "B", "C", "D"], // A: Joris, B: Jelle, C: Luuk, D: Dries
+    answers: ["C"] // Correct answer is "Dries"
   },
   {
-    question: "Als Wesley een geheim talent zou hebben waar niemand vanaf weet, wat zou dat zijn?",
-    options: [
-      "Iedereen zijn gedachten lezen",
-      "Onbeperkt snoep kunnen eten zonder er buikpijn van te krijgen",
-      "Mensen altijd kunnen overtuigen van zijn mening",
-      "Meteen in slaap kunnen vallen"
-    ],
-    answer: "Meteen in slaap kunnen vallen"
+    question: "46. Als Luuk een slechte dag heeft, waardoor voelt hij zich dan beter?",
+    options: ["A", "B", "C", "D"], // A: Minimaal 1x friet met frikandel per week, B: Vrijdag frietdag, C: Geslachtsgemeenschap, D: Kinderen zijn een must
+    answers: ["A","B"] // Correct answer is "Minimaal 1x friet met frikandel per week"
   },
   {
-    question: "Welk land heeft Joris bovenaan zijn bucketlist staan?",
-    options: ["Amerika", "Noorwegen", "Kosovo", "Japan"],
-    answer: "Japan"
+    question: "47. Wat is een ding wat Dries in zijn leven zou veranderen voor iemand anders?",
+    options: ["A", "B", "C", "D"], // A: Joris, B: Jelle, C: Wesley, D: Dries
+    answers: ["A"] // Correct answer is "Jelle"
+  },
+  {
+    question: "48. Welke zin/woord(en) gebruikt Joris het meeste?",
+    options: ["A", "B", "C", "D"], // A: Joris, B: Jelle, C: Luuk, D: Dries
+    answers: ["D"] // Correct answer is "Luuk"
+  },
+  {
+    question: "49. Bij wie schuift Wesley het liefst aan voor een etentje?",
+    options: ["A", "B", "C", "D"], // A: Joris, B: Jelle, C: Wesley, D: Dries
+    answers: ["D"] // Correct answer is "Dries"
+  },
+  {
+    question: "50. Waarover valt niet te onderhandelen in een relatie volgens Wesley?",
+    options: ["A", "B", "C", "D"], // A: Joris, B: Jelle, C: Wesley, D: Dries
+    answers: ["A"] // Correct answer is "Jelle"
+  },
+  {
+    question: "Wat is de echte naam van Ghost?",
+    options: ["A", "B", "C", "D"], // A: Joris, B: Jelle, C: Wesley, D: Dries
+    answers: ["A"] // Correct answer is "Jelle"
+  },
+  {
+    question: "51. Wie neemt Luuk mee naar een pubquiz?",
+    options: ["A", "B", "C", "D"], // A: Brit, B: Zn moeder, C: Hijzelf, D: Zn band
+    answers: ["B"] // Correct answer is "Brit"
+  },
+  {
+    question: "52. Wie in de vriendengroep is het meest creatief?",
+    options: ["A", "B", "C", "D"], // A: Joris, B: Jelle, C: Wesley, D: Dries
+    answers: ["C"] // Correct answer is "Jelle"
+  },
+  {
+    question: "53. Wie in de vriendengroep kent de leukste feestjes?",
+    options: ["A", "B", "C", "D"], // A: Goede Koffie, B: Rustig op zn mobiel zitten, C: Douchen, D: Verder slapen
+    answers: ["D"] // Correct answer is "Rustig op zn mobiel zitten"
+  },
+  {
+    question: "54. Wie snurkt er het meest en hardst?",
+    options: ["A", "B", "C", "D"], // A: Assertiviteit, B: Koppigheid, C: Alleen winnen mentaliteit, D: Gezelligheid
+    answers: ["B"] // Correct answer is "Gezelligheid"
+  },
+  {
+    question: "55. Wie of wat beïnvloed Luuk het meeste?",
+    options: ["A", "B", "C", "D"], // A: Luuk heeft geen enkele actieve herinnering aan zijn kindertijd, B: Astronaut, C: Piloot, D: Minister-President
+    answers: ["C"] // Correct answer is "Luuk heeft geen enkele actieve herinnering aan zijn kindertijd"
+  },
+  {
+    question: "56. Wie verzint de meeste smoesjes?",
+    options: ["A", "B", "C", "D"], // A: Iedereen zijn gedachten lezen, B: Onbeperkt snoep kunnen eten zonder er buikpijn van te krijgen, C: Mensen altijd kunnen overtuigen van zijn mening, D: Meteen in slaap kunnen vallen
+    answers: ["B"] // Correct answer is "Onbeperkt snoep kunnen eten zonder er buikpijn van te krijgen"
+  }
+  ,
+  {
+    question: "57. Wat is de favoriete manier om de dag te beginnen voor Luuk?",
+    options: ["A", "B", "C", "D"], // A: Iedereen zijn gedachten lezen, B: Onbeperkt snoep kunnen eten zonder er buikpijn van te krijgen, C: Mensen altijd kunnen overtuigen van zijn mening, D: Meteen in slaap kunnen vallen
+    answers: ["C"] // Correct answer is "Onbeperkt snoep kunnen eten zonder er buikpijn van te krijgen"
+  }
+  ,
+  {
+    question: "58. Wat vinden mensen het leukst aan Joris?",
+    options: ["A", "B", "C", "D"], // A: Iedereen zijn gedachten lezen, B: Onbeperkt snoep kunnen eten zonder er buikpijn van te krijgen, C: Mensen altijd kunnen overtuigen van zijn mening, D: Meteen in slaap kunnen vallen
+    answers: ["B"] // Correct answer is "Onbeperkt snoep kunnen eten zonder er buikpijn van te krijgen"
+  }
+  ,
+  {
+    question: "59. Welk beroep wilde Luuk als kind worden?",
+    options: ["A", "B", "C", "D"], // A: Iedereen zijn gedachten lezen, B: Onbeperkt snoep kunnen eten zonder er buikpijn van te krijgen, C: Mensen altijd kunnen overtuigen van zijn mening, D: Meteen in slaap kunnen vallen
+    answers: ["B"] // Correct answer is "Onbeperkt snoep kunnen eten zonder er buikpijn van te krijgen"
+  }
+  ,
+  {
+    question: "60. Als Wesley een geheim talent zou hebben waar niemand vanaf weet, wat zou dat zijn?",
+    options: ["A", "B", "C", "D"], // A: Iedereen zijn gedachten lezen, B: Onbeperkt snoep kunnen eten zonder er buikpijn van te krijgen, C: Mensen altijd kunnen overtuigen van zijn mening, D: Meteen in slaap kunnen vallen
+    answers: ["B"] // Correct answer is "Onbeperkt snoep kunnen eten zonder er buikpijn van te krijgen"
   }
 ];
 
