@@ -43,6 +43,15 @@ function checkAnswer() {
   const checkboxes = document.querySelectorAll('.options input[type="checkbox"]');
   const isNonScoring = currentQuestion.nonScoring || false;
 
+  const selectedAnswers = document.querySelectorAll('.options input[type="checkbox"]:checked');
+  
+
+  // Check if more than one answer is selected
+  if (selectedAnswers.length > 1) {
+    alert("Valspelen mag niet :)");
+    return; // Stop execution to prevent moving to the next question
+  }
+
   checkboxes.forEach((checkbox) => {
     const parent = checkbox.parentElement;
     const optionText = checkbox.value;
@@ -118,15 +127,22 @@ function createSuccessExplosion(element) {
 }
 
 function nextQuestion() {
+  // Increment the question index
   currentQuestionIndex++;
-  if (currentQuestionIndex % 11 === 0 && currentQuestionIndex < quizData.length) {
+
+ 
+
+  // Check if we've reached a multiple of 11 but make sure we don't skip the first set
+  if (currentQuestionIndex > 0 && currentQuestionIndex % 11 === 0 && currentQuestionIndex < quizData.length) {
     showIntermediateScore();
-  } else if (currentQuestionIndex < quizData.length) {
+    return;
+  } else if (currentQuestionIndex < quizData.length && currentQuestionIndex % 11 != 0) {
     loadQuestion();
   } else {
     showResult();
   }
 }
+
 
 function showIntermediateScore() {
   quizContainer.innerHTML = `
@@ -136,6 +152,7 @@ function showIntermediateScore() {
   checkBtn.style.display = 'none';
   nextBtn.style.display = 'inline-block';
   nextBtn.innerText = 'Volgende';
+ 
 }
 
 function showResult() {
@@ -207,6 +224,11 @@ const quizData = [
     answers: ["A"] 
   },
   {
+    question: "11. Welke sport wil Jelle het liefst beoefenen?",
+    options: ["A", "B", "C", "D"], // A: Mountainbiken, B: Geen, C: Snowboarden, D: F1 Coureur
+    answers: ["A"] 
+  },
+  {
     question: "12. Met welke vriend zit Joris het liefst in het team met Beerpong?",
     options: ["A", "B", "C", "D"], // A: Luuk, B: Jelle, C: Dries, D: Wesley
     answers: ["D"] // Correct answer is "Wesley"
@@ -255,6 +277,11 @@ const quizData = [
     question: "Wie zijn baby foto zie je hier?",
     options: ["A", "B", "C", "D"], // A: Dries, B: Wesley, C: Joris, D: Jelle
     answers: ["C"] // Correct answer is "Jelle"
+  },
+  {
+    question: "21. Welk dier zou Jelle willen zijn?",
+    options: ["A", "B", "C", "D"], // A: Dries, B: Wesley, C: Joris, D: Jelle
+    answers: ["A"] // Correct answer is "Jelle"
   },
   {
     question: "21. Welk dier zou Jelle willen zijn?",
@@ -317,6 +344,11 @@ const quizData = [
     answers: ["B"] // Correct answer is "Twee rechterhanden"
   },
   {
+    question: "31. Wie kan nooit toegeven dat hij fout zit?",
+    options: ["A", "B", "C", "D"], // A: Rocket League Pro Speler Zijn, B: Twee rechterhanden, C: Darts Talentje, D: Acteur
+    answers: ["B"] // Correct answer is "Twee rechterhanden"
+  },
+  {
     question: "32. Wie durft er het minst volgens Wesley?",
     options: ["A", "B", "C", "D"], // A: Dag van de kontjes, B: Kerst, C: Gast weet niet eens wanneer de feestdagen zijn, D: Koningsdag
     answers: ["C"] // Correct answer is "Kerst"
@@ -372,6 +404,11 @@ const quizData = [
     answers: ["B"] // Correct answer is "Muziek"
   },
   {
+    question: "41. Wat is de favoriete manier om een vrije avond door te brengen van Joris?",
+    options: ["A", "B", "C", "D"], // A: Brit Bootycall, B: Muziek, C: Feesten, D: Slapen
+    answers: ["B"] // Correct answer is "Muziek"
+  },
+  {
     question: "42. Welk land heeft Joris bovenaan zijn bucketlist staan?",
     options: ["A", "B", "C", "D"], // A: Brit Bootycall, B: Muziek, C: Feesten, D: Slapen
     answers: ["A"] // Correct answer is "Muziek"
@@ -420,6 +457,11 @@ const quizData = [
     question: "Wat is de echte naam van Ghost?",
     options: ["A", "B", "C", "D"], // A: Joris, B: Jelle, C: Wesley, D: Dries
     answers: ["A"] // Correct answer is "Jelle"
+  },
+  {
+    question: "51. Wie neemt Luuk mee naar een pubquiz?",
+    options: ["A", "B", "C", "D"], // A: Brit, B: Zn moeder, C: Hijzelf, D: Zn band
+    answers: ["B"] // Correct answer is "Brit"
   },
   {
     question: "51. Wie neemt Luuk mee naar een pubquiz?",
