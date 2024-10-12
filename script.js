@@ -479,13 +479,13 @@ const quizData = [
   {
     question: "58. Wat vinden mensen het leukst aan Joris?",
     options: ["A", "B", "C", "D"], // A: Iedereen zijn gedachten lezen, B: Onbeperkt snoep kunnen eten zonder er buikpijn van te krijgen, C: Mensen altijd kunnen overtuigen van zijn mening, D: Meteen in slaap kunnen vallen
-    answers: ["B"] // Correct answer is "Onbeperkt snoep kunnen eten zonder er buikpijn van te krijgen"
+    answers: ["B","D"] // Correct answer is "Onbeperkt snoep kunnen eten zonder er buikpijn van te krijgen"
   }
   ,
   {
     question: "59. Welk beroep wilde Luuk als kind worden?",
     options: ["A", "B", "C", "D"], // A: Iedereen zijn gedachten lezen, B: Onbeperkt snoep kunnen eten zonder er buikpijn van te krijgen, C: Mensen altijd kunnen overtuigen van zijn mening, D: Meteen in slaap kunnen vallen
-    answers: ["B"] // Correct answer is "Onbeperkt snoep kunnen eten zonder er buikpijn van te krijgen"
+    answers: ["A"] // Correct answer is "Onbeperkt snoep kunnen eten zonder er buikpijn van te krijgen"
   }
   ,
   {
